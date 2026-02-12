@@ -1,0 +1,364 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 63;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		101B4709FE1E41074EA9C012 /* NameInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58F9E51BD15264BF0086AC7 /* NameInputView.swift */; };
+		1BC68B263560D23993A77741 /* TemplateSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3703F425E2E5F2D37AA6A3E6 /* TemplateSelectView.swift */; };
+		361B765E70C150D1D5959F0A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 47210CAB6CE3D49A4104C2AE /* Assets.xcassets */; };
+		50114D19340964D2886BA262 /* ImageCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E934C0571E8CAAE2EFF7CBEC /* ImageCompositor.swift */; };
+		58619C13CE0C4ACC161054C7 /* EventCardMakerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8400E178CABAFA3C838187B6 /* EventCardMakerApp.swift */; };
+		74A577295769D76EE784E500 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AA6633147BBF45FA96D715 /* ContentView.swift */; };
+		7960360AD2DAE0A4657BA8B8 /* CompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BE9E739FB929F30BF1D91E /* CompleteView.swift */; };
+		7F19041C2B4BE5ACAC1DAEE5 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81671219DBF3C103C4805BDC /* CameraView.swift */; };
+		8E54AD78240DDB3673979477 /* CardPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B565A010132BCD32DC999A5 /* CardPreviewView.swift */; };
+		9F33DF7076647BD17BCB044B /* CardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31DFA903671E9BBFCB618BDA /* CardData.swift */; };
+		CB64934CE67FE8FC73B69A87 /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F40FB58FCFE553D7AD122F /* CameraService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		31DFA903671E9BBFCB618BDA /* CardData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardData.swift; sourceTree = "<group>"; };
+		3703F425E2E5F2D37AA6A3E6 /* TemplateSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateSelectView.swift; sourceTree = "<group>"; };
+		47210CAB6CE3D49A4104C2AE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		4B565A010132BCD32DC999A5 /* CardPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPreviewView.swift; sourceTree = "<group>"; };
+		81671219DBF3C103C4805BDC /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		8400E178CABAFA3C838187B6 /* EventCardMakerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventCardMakerApp.swift; sourceTree = "<group>"; };
+		8CA54D526B34E1B282468BFF /* EventCardMaker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EventCardMaker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A6BE9E739FB929F30BF1D91E /* CompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteView.swift; sourceTree = "<group>"; };
+		D0F40FB58FCFE553D7AD122F /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
+		D58F9E51BD15264BF0086AC7 /* NameInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameInputView.swift; sourceTree = "<group>"; };
+		E5AA6633147BBF45FA96D715 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		E934C0571E8CAAE2EFF7CBEC /* ImageCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCompositor.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		046DC7657540E2B4D42C868D /* EventCardMaker */ = {
+			isa = PBXGroup;
+			children = (
+				47210CAB6CE3D49A4104C2AE /* Assets.xcassets */,
+				8400E178CABAFA3C838187B6 /* EventCardMakerApp.swift */,
+				5A8C46EEB84BC5DC54A2B789 /* Models */,
+				90B68B4F218854B0A3DDC96A /* Services */,
+				AFECD97B2AAD2764DC21E690 /* Views */,
+			);
+			path = EventCardMaker;
+			sourceTree = "<group>";
+		};
+		42EFA910BCC770F6ACD797EC = {
+			isa = PBXGroup;
+			children = (
+				046DC7657540E2B4D42C868D /* EventCardMaker */,
+				EA37B98BFC0DE629C86AD652 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5A8C46EEB84BC5DC54A2B789 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				31DFA903671E9BBFCB618BDA /* CardData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		90B68B4F218854B0A3DDC96A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				D0F40FB58FCFE553D7AD122F /* CameraService.swift */,
+				E934C0571E8CAAE2EFF7CBEC /* ImageCompositor.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AFECD97B2AAD2764DC21E690 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				81671219DBF3C103C4805BDC /* CameraView.swift */,
+				4B565A010132BCD32DC999A5 /* CardPreviewView.swift */,
+				A6BE9E739FB929F30BF1D91E /* CompleteView.swift */,
+				E5AA6633147BBF45FA96D715 /* ContentView.swift */,
+				D58F9E51BD15264BF0086AC7 /* NameInputView.swift */,
+				3703F425E2E5F2D37AA6A3E6 /* TemplateSelectView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		EA37B98BFC0DE629C86AD652 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8CA54D526B34E1B282468BFF /* EventCardMaker.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A9CC390887F5B4B70750D2D6 /* EventCardMaker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C40CFD07D3678AE46C22ED25 /* Build configuration list for PBXNativeTarget "EventCardMaker" */;
+			buildPhases = (
+				440F3D28CFE515910AC6151F /* Sources */,
+				E859C743AC6305217BEC2D22 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EventCardMaker;
+			packageProductDependencies = (
+			);
+			productName = EventCardMaker;
+			productReference = 8CA54D526B34E1B282468BFF /* EventCardMaker.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2FD7837C11F02FFB36411F79 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2620;
+			};
+			buildConfigurationList = CD765E8EA54ED872A9D75E87 /* Build configuration list for PBXProject "EventCardMaker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 42EFA910BCC770F6ACD797EC;
+			minimizedProjectReferenceProxies = 1;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A9CC390887F5B4B70750D2D6 /* EventCardMaker */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E859C743AC6305217BEC2D22 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				361B765E70C150D1D5959F0A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		440F3D28CFE515910AC6151F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB64934CE67FE8FC73B69A87 /* CameraService.swift in Sources */,
+				7F19041C2B4BE5ACAC1DAEE5 /* CameraView.swift in Sources */,
+				9F33DF7076647BD17BCB044B /* CardData.swift in Sources */,
+				8E54AD78240DDB3673979477 /* CardPreviewView.swift in Sources */,
+				7960360AD2DAE0A4657BA8B8 /* CompleteView.swift in Sources */,
+				74A577295769D76EE784E500 /* ContentView.swift in Sources */,
+				58619C13CE0C4ACC161054C7 /* EventCardMakerApp.swift in Sources */,
+				50114D19340964D2886BA262 /* ImageCompositor.swift in Sources */,
+				101B4709FE1E41074EA9C012 /* NameInputView.swift in Sources */,
+				1BC68B263560D23993A77741 /* TemplateSelectView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0E7F0590877B99FEF6B86AA7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "カード作成のためにカメラを使用します";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fabrica.EventCardMaker;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		55E428487157B71FCA0D0D27 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = F4T3VKP9NB;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A9F7032F5EFDBDDE78A4D538 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "カード作成のためにカメラを使用します";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fabrica.EventCardMaker;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		B58B1F080ECBC43338528486 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = F4T3VKP9NB;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C40CFD07D3678AE46C22ED25 /* Build configuration list for PBXNativeTarget "EventCardMaker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0E7F0590877B99FEF6B86AA7 /* Debug */,
+				A9F7032F5EFDBDDE78A4D538 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CD765E8EA54ED872A9D75E87 /* Build configuration list for PBXProject "EventCardMaker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B58B1F080ECBC43338528486 /* Debug */,
+				55E428487157B71FCA0D0D27 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2FD7837C11F02FFB36411F79 /* Project object */;
+}
