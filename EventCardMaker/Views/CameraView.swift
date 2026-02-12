@@ -17,12 +17,8 @@ struct CameraView: View {
                 loadingView
             }
         }
-        .onAppear {
-            cameraService.start()
-        }
-        .onDisappear {
-            cameraService.stop()
-        }
+        .onAppear { cameraService.start() }
+        .onDisappear { cameraService.stop() }
     }
     
     // MARK: - カメラプレビュー
@@ -31,19 +27,17 @@ struct CameraView: View {
         VStack(spacing: 0) {
             // ヘッダー
             HStack {
-                Text("人物を撮影してください")
+                Text("人物を撮影")
                     .font(.title3.bold())
                     .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
                     .background(.ultraThinMaterial)
                     .cornerRadius(12)
                 
                 Spacer()
                 
-                Button {
-                    cameraService.toggleCamera()
-                } label: {
+                Button { cameraService.toggleCamera() } label: {
                     Image(systemName: "camera.rotate.fill")
                         .font(.title2)
                         .foregroundColor(.white)
@@ -55,52 +49,61 @@ struct CameraView: View {
             .padding(.horizontal, 16)
             .padding(.top, 60)
             
-            // 精度切り替え + FPS
-            HStack(spacing: 8) {
-                ForEach(SegmentationQuality.allCases, id: \.self) { q in
-                    Button {
-                        cameraService.quality = q
-                    } label: {
-                        Text(q.rawValue)
-                            .font(.caption.bold())
-                            .foregroundColor(cameraService.quality == q ? .black : .white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(cameraService.quality == q ? Color.green : Color.white.opacity(0.2))
-                            .cornerRadius(8)
+            // モード切替（スクロール可能）
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(SegmentationMode.allCases, id: \.self) { mode in
+                        Button {
+                            cameraService.segmentationMode = mode
+                        } label: {
+                            Text(mode.label)
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(cameraService.segmentationMode == mode ? .black : .white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(cameraService.segmentationMode == mode ? Color.green : Color.white.opacity(0.2))
+                                .cornerRadius(8)
+                        }
                     }
+                    
+                    Spacer()
+                    
+                    Text("\(cameraService.currentFPS) fps")
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(fpsColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.black.opacity(0.6))
+                        .cornerRadius(6)
                 }
-                
-                Spacer()
-                
-                Text("\(cameraService.currentFPS) fps")
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(fpsColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.black.opacity(0.6))
-                    .cornerRadius(6)
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
             
-            // 閾値スライダー
-            HStack(spacing: 8) {
-                Text("閾値")
-                    .font(.caption)
+            // 閾値スライダー（PersonSegmentationモード時のみ表示）
+            if cameraService.segmentationMode != .foregroundMask {
+                HStack(spacing: 8) {
+                    Text("閾値")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .frame(width: 30)
+                    
+                    Slider(value: $cameraService.maskThreshold, in: 0.5...0.99, step: 0.01)
+                        .tint(.green)
+                    
+                    Text(String(format: "%.2f", cameraService.maskThreshold))
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(.white)
+                        .frame(width: 40)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+            } else {
+                Text("ForegroundInstanceMask — 閾値なし（自動最適化）")
+                    .font(.caption2)
                     .foregroundColor(.gray)
-                    .frame(width: 30)
-                
-                Slider(value: $cameraService.maskThreshold, in: 0.5...0.99, step: 0.05)
-                    .tint(.green)
-                
-                Text(String(format: "%.2f", cameraService.maskThreshold))
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.white)
-                    .frame(width: 40)
+                    .padding(.top, 4)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 4)
             
             Spacer()
             
@@ -110,7 +113,6 @@ struct CameraView: View {
                     Text("RAW")
                         .font(.caption.bold())
                         .foregroundColor(.yellow)
-                    
                     if let frame = cameraService.currentFrame {
                         Image(uiImage: frame)
                             .resizable()
@@ -120,7 +122,7 @@ struct CameraView: View {
                 }
                 
                 VStack(spacing: 6) {
-                    Text("SEGMENTED")
+                    Text(cameraService.segmentationMode == .foregroundMask ? "FOREGROUND" : "SEGMENTED")
                         .font(.caption.bold())
                         .foregroundColor(.green)
                     
@@ -129,14 +131,10 @@ struct CameraView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .cornerRadius(12)
-                            .background(
-                                CheckerboardBackground()
-                                    .cornerRadius(12)
-                            )
+                            .background(CheckerboardBackground().cornerRadius(12))
                     } else {
                         ZStack {
-                            Color.gray.opacity(0.2)
-                                .cornerRadius(12)
+                            Color.gray.opacity(0.2).cornerRadius(12)
                             Text("人物未検出")
                                 .font(.caption)
                                 .foregroundColor(.gray)
@@ -149,13 +147,12 @@ struct CameraView: View {
             Spacer()
             
             // ステータス
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 if cameraService.previewWithMask != nil {
-                    Label("人物検出中", systemImage: "person.fill.checkmark")
+                    Label("検出中", systemImage: "person.fill.checkmark")
                         .font(.callout.bold())
                         .foregroundColor(.green)
                 }
-                
                 Text(cameraService.isFrontCamera ? "フロント" : "リア")
                     .font(.caption)
                     .foregroundColor(.gray)
@@ -163,27 +160,24 @@ struct CameraView: View {
                     .padding(.vertical, 4)
                     .background(.gray.opacity(0.3))
                     .cornerRadius(6)
+                Text(cameraService.segmentationMode.label)
+                    .font(.caption)
+                    .foregroundColor(.green)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.green.opacity(0.15))
+                    .cornerRadius(6)
             }
             .padding(8)
             .background(.black.opacity(0.6))
             .cornerRadius(8)
             
-            // シャッターボタン
-            Button {
-                capturePhoto()
-            } label: {
+            // シャッター
+            Button { capturePhoto() } label: {
                 ZStack {
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 72, height: 72)
-                    Circle()
-                        .stroke(.white, lineWidth: 4)
-                        .frame(width: 82, height: 82)
-                    
-                    if isCapturing {
-                        ProgressView()
-                            .tint(.black)
-                    }
+                    Circle().fill(.white).frame(width: 72, height: 72)
+                    Circle().stroke(.white, lineWidth: 4).frame(width: 82, height: 82)
+                    if isCapturing { ProgressView().tint(.black) }
                 }
             }
             .disabled(isCapturing)
@@ -221,8 +215,7 @@ struct CameraView: View {
     
     private var loadingView: some View {
         VStack(spacing: 20) {
-            ProgressView()
-                .scaleEffect(1.5)
+            ProgressView().scaleEffect(1.5)
             Text("カメラを起動中...")
                 .foregroundColor(.gray)
         }
@@ -230,7 +223,7 @@ struct CameraView: View {
     
     private func capturePhoto() {
         isCapturing = true
-        cameraService.captureHighQuality(burstCount: 3) { original, segmented in
+        cameraService.captureHighQuality { original, segmented in
             if let original, let segmented {
                 cardData.capturedImage = original
                 cardData.segmentedImage = segmented
@@ -241,28 +234,17 @@ struct CameraView: View {
     }
 }
 
-// 透過部分を可視化するチェッカーボード
 struct CheckerboardBackground: View {
     let size: CGFloat = 10
-    
     var body: some View {
         Canvas { context, canvasSize in
             let rows = Int(canvasSize.height / size) + 1
             let cols = Int(canvasSize.width / size) + 1
-            
             for row in 0..<rows {
                 for col in 0..<cols {
                     let isLight = (row + col) % 2 == 0
-                    let rect = CGRect(
-                        x: CGFloat(col) * size,
-                        y: CGFloat(row) * size,
-                        width: size,
-                        height: size
-                    )
-                    context.fill(
-                        Path(rect),
-                        with: .color(isLight ? Color.gray.opacity(0.3) : Color.gray.opacity(0.15))
-                    )
+                    let rect = CGRect(x: CGFloat(col) * size, y: CGFloat(row) * size, width: size, height: size)
+                    context.fill(Path(rect), with: .color(isLight ? Color.gray.opacity(0.3) : Color.gray.opacity(0.15)))
                 }
             }
         }
