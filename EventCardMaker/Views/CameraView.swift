@@ -10,121 +10,11 @@ struct CameraView: View {
     var body: some View {
         ZStack {
             if cameraService.permissionDenied {
-                // カメラ権限拒否時
-                VStack(spacing: 20) {
-                    Image(systemName: "camera.slash.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.red)
-                    Text("カメラへのアクセスが必要です")
-                        .font(.title3.bold())
-                        .foregroundColor(.white)
-                    Text("設定 → EventCardMaker → カメラをONにしてください")
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                    Button("設定を開く") {
-                        if let url = URL(string: UIApplication.openSettingsURLString) {
-                            UIApplication.shared.open(url)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .padding()
+                permissionDeniedView
             } else if cameraService.currentFrame != nil {
-                // カメラ映像あり → 2画面並列表示
-                VStack(spacing: 0) {
-                    Text("人物を撮影してください")
-                        .font(.title3.bold())
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(12)
-                        .padding(.top, 60)
-                    
-                    Spacer()
-                    
-                    // 2画面比較
-                    HStack(spacing: 8) {
-                        // 左: 生カメラ映像
-                        VStack(spacing: 6) {
-                            Text("RAW")
-                                .font(.caption.bold())
-                                .foregroundColor(.yellow)
-                            
-                            if let frame = cameraService.currentFrame {
-                                Image(uiImage: frame)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .cornerRadius(12)
-                            }
-                        }
-                        
-                        // 右: 切り抜き済み
-                        VStack(spacing: 6) {
-                            Text("SEGMENTED")
-                                .font(.caption.bold())
-                                .foregroundColor(.green)
-                            
-                            if let masked = cameraService.previewWithMask {
-                                Image(uiImage: masked)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .cornerRadius(12)
-                                    .background(
-                                        // チェッカーボードで透過部分を可視化
-                                        CheckerboardBackground()
-                                            .cornerRadius(12)
-                                    )
-                            } else {
-                                ZStack {
-                                    Color.gray.opacity(0.2)
-                                        .cornerRadius(12)
-                                    Text("人物未検出")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    
-                    Spacer()
-                    
-                    // 人物検出ステータス
-                    if cameraService.previewWithMask != nil {
-                        Label("人物を検出中", systemImage: "person.fill.checkmark")
-                            .font(.callout.bold())
-                            .foregroundColor(.green)
-                            .padding(8)
-                            .background(.black.opacity(0.6))
-                            .cornerRadius(8)
-                    }
-                    
-                    // シャッターボタン
-                    Button {
-                        capturePhoto()
-                    } label: {
-                        ZStack {
-                            Circle()
-                                .fill(.white)
-                                .frame(width: 72, height: 72)
-                            Circle()
-                                .stroke(.white, lineWidth: 4)
-                                .frame(width: 82, height: 82)
-                        }
-                    }
-                    .disabled(isCapturing)
-                    .opacity(isCapturing ? 0.5 : 1)
-                    .padding(.bottom, 40)
-                }
+                cameraPreviewView
             } else {
-                // カメラ起動中
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                    Text("カメラを起動中...")
-                        .foregroundColor(.gray)
-                }
+                loadingView
             }
         }
         .onAppear {
@@ -134,6 +24,160 @@ struct CameraView: View {
             cameraService.stop()
         }
     }
+    
+    // MARK: - カメラプレビュー（2画面並列）
+    
+    private var cameraPreviewView: some View {
+        VStack(spacing: 0) {
+            // ヘッダー
+            HStack {
+                Text("人物を撮影してください")
+                    .font(.title3.bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(12)
+                
+                Spacer()
+                
+                // カメラ切り替えボタン
+                Button {
+                    cameraService.toggleCamera()
+                } label: {
+                    Image(systemName: "camera.rotate.fill")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .padding(12)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Circle())
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 60)
+            
+            Spacer()
+            
+            // 2画面比較
+            HStack(spacing: 8) {
+                // 左: 生カメラ映像
+                VStack(spacing: 6) {
+                    Text("RAW")
+                        .font(.caption.bold())
+                        .foregroundColor(.yellow)
+                    
+                    if let frame = cameraService.currentFrame {
+                        Image(uiImage: frame)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .cornerRadius(12)
+                    }
+                }
+                
+                // 右: 切り抜き済み
+                VStack(spacing: 6) {
+                    Text("SEGMENTED")
+                        .font(.caption.bold())
+                        .foregroundColor(.green)
+                    
+                    if let masked = cameraService.previewWithMask {
+                        Image(uiImage: masked)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .cornerRadius(12)
+                            .background(
+                                CheckerboardBackground()
+                                    .cornerRadius(12)
+                            )
+                    } else {
+                        ZStack {
+                            Color.gray.opacity(0.2)
+                                .cornerRadius(12)
+                            Text("人物未検出")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            
+            Spacer()
+            
+            // ステータス
+            HStack(spacing: 16) {
+                if cameraService.previewWithMask != nil {
+                    Label("人物検出中", systemImage: "person.fill.checkmark")
+                        .font(.callout.bold())
+                        .foregroundColor(.green)
+                }
+                
+                Text(cameraService.isFrontCamera ? "フロント" : "リア")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.gray.opacity(0.3))
+                    .cornerRadius(6)
+            }
+            .padding(8)
+            .background(.black.opacity(0.6))
+            .cornerRadius(8)
+            
+            // シャッターボタン
+            Button {
+                capturePhoto()
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 72, height: 72)
+                    Circle()
+                        .stroke(.white, lineWidth: 4)
+                        .frame(width: 82, height: 82)
+                }
+            }
+            .disabled(isCapturing)
+            .opacity(isCapturing ? 0.5 : 1)
+            .padding(.bottom, 40)
+        }
+    }
+    
+    // MARK: - 権限拒否
+    
+    private var permissionDeniedView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "camera.slash.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.red)
+            Text("カメラへのアクセスが必要です")
+                .font(.title3.bold())
+                .foregroundColor(.white)
+            Text("設定 → EventCardMaker → カメラをONにしてください")
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+            Button("設定を開く") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+    
+    // MARK: - ローディング
+    
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .scaleEffect(1.5)
+            Text("カメラを起動中...")
+                .foregroundColor(.gray)
+        }
+    }
+    
+    // MARK: - 撮影
     
     private func capturePhoto() {
         isCapturing = true

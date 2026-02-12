@@ -7,14 +7,17 @@ class CameraService: NSObject, ObservableObject {
     @Published var segmentationMask: UIImage?
     @Published var previewWithMask: UIImage?
     @Published var permissionDenied = false
+    @Published var isFrontCamera = false
     
     private let captureSession = AVCaptureSession()
     private let videoOutput = AVCaptureVideoDataOutput()
     private let processingQueue = DispatchQueue(label: "camera.processing", qos: .userInteractive)
+    private var currentInput: AVCaptureDeviceInput?
     
     private var segmentationRequest: VNGeneratePersonSegmentationRequest = {
         let request = VNGeneratePersonSegmentationRequest()
-        request.qualityLevel = .fast // リアルタイムプレビュー用
+        // .balanced: 人物検出精度を上げる（.fastは人物以外も拾いやすい）
+        request.qualityLevel = .balanced
         return request
     }()
     
@@ -23,7 +26,6 @@ class CameraService: NSObject, ObservableObject {
     func start() {
         guard !captureSession.isRunning else { return }
         
-        // カメラ権限チェック
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             processingQueue.async { [weak self] in
@@ -54,6 +56,38 @@ class CameraService: NSObject, ObservableObject {
         captureSession.stopRunning()
     }
     
+    func toggleCamera() {
+        processingQueue.async { [weak self] in
+            guard let self else { return }
+            
+            let newPosition: AVCaptureDevice.Position = isFrontCamera ? .back : .front
+            
+            guard let newCamera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition),
+                  let newInput = try? AVCaptureDeviceInput(device: newCamera) else { return }
+            
+            captureSession.beginConfiguration()
+            
+            // 既存のinputを削除
+            if let currentInput = self.currentInput {
+                captureSession.removeInput(currentInput)
+            }
+            
+            if captureSession.canAddInput(newInput) {
+                captureSession.addInput(newInput)
+                self.currentInput = newInput
+            }
+            
+            // 映像の向き補正
+            self.updateVideoOrientation()
+            
+            captureSession.commitConfiguration()
+            
+            DispatchQueue.main.async {
+                self.isFrontCamera = !self.isFrontCamera
+            }
+        }
+    }
+    
     func captureHighQuality(completion: @escaping (UIImage?, UIImage?) -> Void) {
         guard let frame = currentFrame, let ciImage = CIImage(image: frame) else {
             completion(nil, nil)
@@ -61,7 +95,6 @@ class CameraService: NSObject, ObservableObject {
         }
         
         processingQueue.async {
-            // 高精度セグメンテーション
             do {
                 let request = VNGenerateForegroundInstanceMaskRequest()
                 let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
@@ -94,7 +127,9 @@ class CameraService: NSObject, ObservableObject {
     private func setupCamera() {
         captureSession.sessionPreset = .photo
         
-        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+        // デフォルトはバックカメラ
+        let position: AVCaptureDevice.Position = .back
+        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position),
               let input = try? AVCaptureDeviceInput(device: camera) else {
             print("Failed to get camera device")
             return
@@ -102,6 +137,7 @@ class CameraService: NSObject, ObservableObject {
         
         if captureSession.canAddInput(input) {
             captureSession.addInput(input)
+            currentInput = input
         }
         
         videoOutput.setSampleBufferDelegate(self, queue: processingQueue)
@@ -109,6 +145,21 @@ class CameraService: NSObject, ObservableObject {
         
         if captureSession.canAddOutput(videoOutput) {
             captureSession.addOutput(videoOutput)
+        }
+        
+        // 映像の向き補正
+        updateVideoOrientation()
+    }
+    
+    private func updateVideoOrientation() {
+        if let connection = videoOutput.connection(with: .video) {
+            // iOS 17+: videoRotationAngle を使用
+            connection.videoRotationAngle = 90 // Portrait向き補正
+            
+            // フロントカメラの場合はミラーリング
+            if isFrontCamera || currentInput?.device.position == .front {
+                connection.isVideoMirrored = true
+            }
         }
     }
 }
@@ -124,7 +175,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
         guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
         let uiImage = UIImage(cgImage: cgImage)
         
-        // リアルタイムセグメンテーション
+        // リアルタイムセグメンテーション（人物のみ）
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         try? handler.perform([segmentationRequest])
         
