@@ -6,6 +6,7 @@ class CameraService: NSObject, ObservableObject {
     @Published var currentFrame: UIImage?
     @Published var segmentationMask: UIImage?
     @Published var previewWithMask: UIImage?
+    @Published var permissionDenied = false
     
     private let captureSession = AVCaptureSession()
     private let videoOutput = AVCaptureVideoDataOutput()
@@ -22,9 +23,30 @@ class CameraService: NSObject, ObservableObject {
     func start() {
         guard !captureSession.isRunning else { return }
         
-        processingQueue.async { [weak self] in
-            self?.setupCamera()
-            self?.captureSession.startRunning()
+        // カメラ権限チェック
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            processingQueue.async { [weak self] in
+                self?.setupCamera()
+                self?.captureSession.startRunning()
+            }
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                if granted {
+                    self?.processingQueue.async {
+                        self?.setupCamera()
+                        self?.captureSession.startRunning()
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self?.permissionDenied = true
+                    }
+                }
+            }
+        default:
+            DispatchQueue.main.async { [weak self] in
+                self?.permissionDenied = true
+            }
         }
     }
     
@@ -73,7 +95,10 @@ class CameraService: NSObject, ObservableObject {
         captureSession.sessionPreset = .photo
         
         guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-              let input = try? AVCaptureDeviceInput(device: camera) else { return }
+              let input = try? AVCaptureDeviceInput(device: camera) else {
+            print("Failed to get camera device")
+            return
+        }
         
         if captureSession.canAddInput(input) {
             captureSession.addInput(input)
