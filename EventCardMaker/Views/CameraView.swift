@@ -55,7 +55,7 @@ struct CameraView: View {
             .padding(.horizontal, 16)
             .padding(.top, 60)
             
-            // 精度切り替えボタン
+            // 精度切り替え + FPS
             HStack(spacing: 8) {
                 ForEach(SegmentationQuality.allCases, id: \.self) { q in
                     Button {
@@ -73,9 +73,8 @@ struct CameraView: View {
                 
                 Spacer()
                 
-                // リアルタイムFPS表示
                 Text("\(cameraService.currentFPS) fps")
-                    .font(.caption.mono())
+                    .font(.system(.caption, design: .monospaced))
                     .foregroundColor(fpsColor)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -83,7 +82,25 @@ struct CameraView: View {
                     .cornerRadius(6)
             }
             .padding(.horizontal, 16)
-            .padding(.top, 12)
+            .padding(.top, 8)
+            
+            // 閾値スライダー
+            HStack(spacing: 8) {
+                Text("閾値")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .frame(width: 30)
+                
+                Slider(value: $cameraService.maskThreshold, in: 0.1...0.95, step: 0.05)
+                    .tint(.green)
+                
+                Text(String(format: "%.2f", cameraService.maskThreshold))
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.white)
+                    .frame(width: 40)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 4)
             
             Spacer()
             
@@ -175,15 +192,11 @@ struct CameraView: View {
         }
     }
     
-    // MARK: - FPSカラー
-    
     private var fpsColor: Color {
         if cameraService.currentFPS >= 20 { return .green }
         if cameraService.currentFPS >= 10 { return .yellow }
         return .red
     }
-    
-    // MARK: - 権限拒否
     
     private var permissionDeniedView: some View {
         VStack(spacing: 20) {
@@ -206,8 +219,6 @@ struct CameraView: View {
         .padding()
     }
     
-    // MARK: - ローディング
-    
     private var loadingView: some View {
         VStack(spacing: 20) {
             ProgressView()
@@ -217,12 +228,8 @@ struct CameraView: View {
         }
     }
     
-    // MARK: - 撮影
-    
     private func capturePhoto() {
         isCapturing = true
-        
-        // バースト3枚から最良フレームを選択
         cameraService.captureHighQuality(burstCount: 3) { original, segmented in
             if let original, let segmented {
                 cardData.capturedImage = original
@@ -259,12 +266,5 @@ struct CheckerboardBackground: View {
                 }
             }
         }
-    }
-}
-
-// mono font extension
-extension Font {
-    func mono() -> Font {
-        .system(.caption, design: .monospaced)
     }
 }

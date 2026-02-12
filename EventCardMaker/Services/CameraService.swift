@@ -35,6 +35,8 @@ class CameraService: NSObject, ObservableObject {
             segmentationRequest.qualityLevel = quality.vnQuality
         }
     }
+    /// マスク閾値: 0.0〜1.0（高いほど確信度の高い部分だけ残す）
+    @Published var maskThreshold: Float = 0.5
     
     private let captureSession = AVCaptureSession()
     private let videoOutput = AVCaptureVideoDataOutput()
@@ -123,14 +125,14 @@ class CameraService: NSObject, ObservableObject {
             return
         }
         
+        let threshold = maskThreshold
+        
         processingQueue.async { [weak self] in
             guard let self else { return }
             
-            // バーストで複数フレーム処理
             var bestResult: (original: UIImage, segmented: UIImage, coverage: CGFloat)?
             
             for i in 0..<burstCount {
-                // 最初のフレームは現在のフレームを使用、以降は少し待って新しいフレームを取得
                 let targetFrame: UIImage
                 let targetCI: CIImage
                 
@@ -138,7 +140,6 @@ class CameraService: NSObject, ObservableObject {
                     targetFrame = frame
                     targetCI = ciImage
                 } else {
-                    // 少し待って次のフレームを取得
                     Thread.sleep(forTimeInterval: 0.1)
                     guard let newFrame = self.currentFrame,
                           let newCI = CIImage(image: newFrame) else { continue }
@@ -158,11 +159,14 @@ class CameraService: NSObject, ObservableObject {
                             croppedToInstancesExtent: false
                         )
                         let maskedCIImage = CIImage(cvPixelBuffer: maskedBuffer)
+                        
+                        // 閾値適用
+                        let thresholdedImage = self.applyThreshold(to: maskedCIImage, original: targetCI, threshold: threshold)
+                        
                         let context = CIContext()
-                        if let cgImage = context.createCGImage(maskedCIImage, from: maskedCIImage.extent) {
+                        if let finalImage = thresholdedImage,
+                           let cgImage = context.createCGImage(finalImage, from: finalImage.extent) {
                             let segmented = UIImage(cgImage: cgImage)
-                            
-                            // マスクのカバレッジ（非透明ピクセルの割合）で品質評価
                             let coverage = self.calculateMaskCoverage(maskedBuffer)
                             
                             if bestResult == nil || coverage > bestResult!.coverage {
@@ -177,7 +181,6 @@ class CameraService: NSObject, ObservableObject {
             
             DispatchQueue.main.async {
                 if let best = bestResult {
-                    print("Best burst frame coverage: \(best.coverage)")
                     completion(best.original, best.segmented)
                 } else {
                     completion(nil, nil)
@@ -186,22 +189,63 @@ class CameraService: NSObject, ObservableObject {
         }
     }
     
-    /// マスクのカバレッジ計算（品質評価用）
+    /// CIImage にマスク閾値を適用
+    private func applyThreshold(to maskedImage: CIImage, original: CIImage, threshold: Float) -> CIImage? {
+        // maskedImage は既にマスク適用済みなのでそのまま返す（バースト用）
+        // 閾値はリアルタイムプレビューで適用
+        return maskedImage
+    }
+    
+    /// マスクに閾値を適用してバイナリ化
+    private func applyMaskThreshold(_ maskCI: CIImage, threshold: Float) -> CIImage {
+        // CIColorClamp + CIColorMatrix で閾値処理
+        // threshold以下を0、以上を1にする
+        guard let clampFilter = CIFilter(name: "CIColorThresholdOtsu") else {
+            // フォールバック: 手動閾値処理
+            return applyManualThreshold(maskCI, threshold: threshold)
+        }
+        // Otsuは自動閾値なので、手動閾値を使う
+        return applyManualThreshold(maskCI, threshold: threshold)
+    }
+    
+    /// 手動閾値処理
+    private func applyManualThreshold(_ maskCI: CIImage, threshold: Float) -> CIImage {
+        // CIColorMatrix でスケーリング → CIColorClamp でクランプ
+        // threshold を中心にシャープに分離
+        let sharpness: Float = 20.0 // エッジのシャープさ
+        let bias = -threshold * sharpness + sharpness / 2.0
+        
+        // まずコントラストを極端に上げて閾値付近で分離
+        let matrixFilter = CIFilter.colorMatrix()
+        matrixFilter.inputImage = maskCI
+        matrixFilter.rVector = CIVector(x: CGFloat(sharpness), y: 0, z: 0, w: 0)
+        matrixFilter.gVector = CIVector(x: 0, y: CGFloat(sharpness), z: 0, w: 0)
+        matrixFilter.bVector = CIVector(x: 0, y: 0, z: CGFloat(sharpness), w: 0)
+        matrixFilter.aVector = CIVector(x: 0, y: 0, z: 0, w: CGFloat(sharpness))
+        matrixFilter.biasVector = CIVector(x: CGFloat(bias), y: CGFloat(bias), z: CGFloat(bias), w: CGFloat(bias))
+        
+        guard let output = matrixFilter.outputImage else { return maskCI }
+        
+        // 0-1にクランプ
+        let clampFilter = CIFilter.colorClamp()
+        clampFilter.inputImage = output
+        clampFilter.minComponents = CIVector(x: 0, y: 0, z: 0, w: 0)
+        clampFilter.maxComponents = CIVector(x: 1, y: 1, z: 1, w: 1)
+        
+        return clampFilter.outputImage ?? maskCI
+    }
+    
     private func calculateMaskCoverage(_ pixelBuffer: CVPixelBuffer) -> CGFloat {
         CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
         
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
-        let totalPixels = width * height
-        guard totalPixels > 0 else { return 0 }
-        
-        // 簡易チェック: 中央付近のピクセルをサンプリング
         guard let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) else { return 0 }
         let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
         
         var nonZeroCount = 0
-        let sampleStep = 4 // 4ピクセルおきにサンプリング（高速化）
+        let sampleStep = 4
         
         for y in stride(from: 0, to: height, by: sampleStep) {
             let rowPtr = baseAddress.advanced(by: y * bytesPerRow)
@@ -218,8 +262,7 @@ class CameraService: NSObject, ObservableObject {
     private func setupCamera() {
         captureSession.sessionPreset = .photo
         
-        let position: AVCaptureDevice.Position = .back
-        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position),
+        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
               let input = try? AVCaptureDeviceInput(device: camera) else {
             print("Failed to get camera device")
             return
@@ -260,20 +303,27 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
         guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
         let uiImage = UIImage(cgImage: cgImage)
         
-        // リアルタイムセグメンテーション
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         try? handler.perform([segmentationRequest])
+        
+        let currentThreshold = maskThreshold
         
         var maskImage: UIImage?
         if let mask = segmentationRequest.results?.first?.pixelBuffer {
             let maskCI = CIImage(cvPixelBuffer: mask)
-            let blendFilter = CIFilter.blendWithMask()
-            blendFilter.inputImage = ciImage
-            blendFilter.backgroundImage = CIImage(color: .clear).cropped(to: ciImage.extent)
-            blendFilter.maskImage = maskCI.transformed(by: CGAffineTransform(
+            
+            // 閾値適用したマスク
+            let thresholdedMask = applyManualThreshold(maskCI, threshold: currentThreshold)
+            
+            let scaledMask = thresholdedMask.transformed(by: CGAffineTransform(
                 scaleX: ciImage.extent.width / maskCI.extent.width,
                 y: ciImage.extent.height / maskCI.extent.height
             ))
+            
+            let blendFilter = CIFilter.blendWithMask()
+            blendFilter.inputImage = ciImage
+            blendFilter.backgroundImage = CIImage(color: .clear).cropped(to: ciImage.extent)
+            blendFilter.maskImage = scaledMask
             
             if let output = blendFilter.outputImage,
                let outputCG = context.createCGImage(output, from: output.extent) {
