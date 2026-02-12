@@ -36,7 +36,7 @@ class CameraService: NSObject, ObservableObject {
         }
     }
     /// マスク閾値: 0.0〜1.0（高いほど確信度の高い部分だけ残す）
-    @Published var maskThreshold: Float = 0.5
+    @Published var maskThreshold: Float = 0.9
     
     private let captureSession = AVCaptureSession()
     private let videoOutput = AVCaptureVideoDataOutput()

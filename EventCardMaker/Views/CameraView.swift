@@ -91,7 +91,7 @@ struct CameraView: View {
                     .foregroundColor(.gray)
                     .frame(width: 30)
                 
-                Slider(value: $cameraService.maskThreshold, in: 0.1...0.95, step: 0.05)
+                Slider(value: $cameraService.maskThreshold, in: 0.5...0.99, step: 0.05)
                     .tint(.green)
                 
                 Text(String(format: "%.2f", cameraService.maskThreshold))
