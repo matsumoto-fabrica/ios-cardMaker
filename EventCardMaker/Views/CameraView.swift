@@ -25,7 +25,7 @@ struct CameraView: View {
         }
     }
     
-    // MARK: - カメラプレビュー（2画面並列）
+    // MARK: - カメラプレビュー
     
     private var cameraPreviewView: some View {
         VStack(spacing: 0) {
@@ -41,7 +41,6 @@ struct CameraView: View {
                 
                 Spacer()
                 
-                // カメラ切り替えボタン
                 Button {
                     cameraService.toggleCamera()
                 } label: {
@@ -56,11 +55,40 @@ struct CameraView: View {
             .padding(.horizontal, 16)
             .padding(.top, 60)
             
+            // 精度切り替えボタン
+            HStack(spacing: 8) {
+                ForEach(SegmentationQuality.allCases, id: \.self) { q in
+                    Button {
+                        cameraService.quality = q
+                    } label: {
+                        Text(q.rawValue)
+                            .font(.caption.bold())
+                            .foregroundColor(cameraService.quality == q ? .black : .white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(cameraService.quality == q ? Color.green : Color.white.opacity(0.2))
+                            .cornerRadius(8)
+                    }
+                }
+                
+                Spacer()
+                
+                // リアルタイムFPS表示
+                Text("\(cameraService.currentFPS) fps")
+                    .font(.caption.mono())
+                    .foregroundColor(fpsColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.black.opacity(0.6))
+                    .cornerRadius(6)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            
             Spacer()
             
             // 2画面比較
             HStack(spacing: 8) {
-                // 左: 生カメラ映像
                 VStack(spacing: 6) {
                     Text("RAW")
                         .font(.caption.bold())
@@ -74,7 +102,6 @@ struct CameraView: View {
                     }
                 }
                 
-                // 右: 切り抜き済み
                 VStack(spacing: 6) {
                     Text("SEGMENTED")
                         .font(.caption.bold())
@@ -135,12 +162,25 @@ struct CameraView: View {
                     Circle()
                         .stroke(.white, lineWidth: 4)
                         .frame(width: 82, height: 82)
+                    
+                    if isCapturing {
+                        ProgressView()
+                            .tint(.black)
+                    }
                 }
             }
             .disabled(isCapturing)
-            .opacity(isCapturing ? 0.5 : 1)
+            .opacity(isCapturing ? 0.7 : 1)
             .padding(.bottom, 40)
         }
+    }
+    
+    // MARK: - FPSカラー
+    
+    private var fpsColor: Color {
+        if cameraService.currentFPS >= 20 { return .green }
+        if cameraService.currentFPS >= 10 { return .yellow }
+        return .red
     }
     
     // MARK: - 権限拒否
@@ -182,7 +222,8 @@ struct CameraView: View {
     private func capturePhoto() {
         isCapturing = true
         
-        cameraService.captureHighQuality { original, segmented in
+        // バースト3枚から最良フレームを選択
+        cameraService.captureHighQuality(burstCount: 3) { original, segmented in
             if let original, let segmented {
                 cardData.capturedImage = original
                 cardData.segmentedImage = segmented
@@ -218,5 +259,12 @@ struct CheckerboardBackground: View {
                 }
             }
         }
+    }
+}
+
+// mono font extension
+extension Font {
+    static func mono() -> Font {
+        .system(.caption, design: .monospaced)
     }
 }
