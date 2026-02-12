@@ -264,7 +264,7 @@ struct CheckerboardBackground: View {
 
 // mono font extension
 extension Font {
-    static func mono() -> Font {
+    func mono() -> Font {
         .system(.caption, design: .monospaced)
     }
 }

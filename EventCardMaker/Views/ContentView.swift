@@ -24,9 +24,14 @@ struct ContentView: View {
                         step = .nameInput
                     }
                 case .nameInput:
-                    NameInputView(cardData: $cardData) {
+                    NameInputView(cardData: $cardData, onNext: {
                         step = .templateSelect
-                    }
+                    }, onRetake: {
+                        cardData.capturedImage = nil
+                        cardData.segmentedImage = nil
+                        cardData.name = ""
+                        step = .camera
+                    })
                 case .templateSelect:
                     TemplateSelectView(cardData: $cardData) {
                         step = .preview

@@ -3,6 +3,7 @@ import SwiftUI
 struct NameInputView: View {
     @Binding var cardData: CardData
     var onNext: () -> Void
+    var onRetake: () -> Void
     
     @FocusState private var isFocused: Bool
     
@@ -48,7 +49,6 @@ struct NameInputView: View {
                     )
                     .focused($isFocused)
                     .onChange(of: cardData.name) { _, newValue in
-                        // アルファベット・スペースのみ許可
                         let filtered = newValue.filter { $0.isLetter || $0 == " " }
                         if filtered != newValue {
                             cardData.name = filtered
@@ -66,18 +66,31 @@ struct NameInputView: View {
             
             Spacer()
             
-            Button {
-                onNext()
-            } label: {
-                Text("次へ")
-                    .font(.title3.bold())
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isValid ? Color.white : Color.gray)
-                    .cornerRadius(16)
+            // ボタン群
+            VStack(spacing: 12) {
+                Button {
+                    onNext()
+                } label: {
+                    Text("次へ")
+                        .font(.title3.bold())
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isValid ? Color.white : Color.gray)
+                        .cornerRadius(16)
+                }
+                .disabled(!isValid)
+                
+                Button {
+                    onRetake()
+                } label: {
+                    Label("撮り直す", systemImage: "camera.rotate")
+                        .font(.body)
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                }
             }
-            .disabled(!isValid)
             .padding(.horizontal, 40)
             .padding(.bottom, 40)
         }
