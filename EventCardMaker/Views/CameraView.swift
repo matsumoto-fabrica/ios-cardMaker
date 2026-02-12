@@ -29,29 +29,9 @@ struct CameraView: View {
                     .buttonStyle(.borderedProminent)
                 }
                 .padding()
-            } else if let preview = cameraService.previewWithMask {
-                // リアルタイム切り抜きプレビュー
-                Image(uiImage: preview)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-            } else if let frame = cameraService.currentFrame {
-                // 通常カメラプレビュー
-                Image(uiImage: frame)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-            } else {
-                // カメラ起動中
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                    Text("カメラを起動中...")
-                        .foregroundColor(.gray)
-                }
-            }
-            
-            // UI オーバーレイ（カメラ権限OK時のみ）
-            if !cameraService.permissionDenied {
-                VStack {
+            } else if cameraService.currentFrame != nil {
+                // カメラ映像あり → 2画面並列表示
+                VStack(spacing: 0) {
                     Text("人物を撮影してください")
                         .font(.title3.bold())
                         .foregroundColor(.white)
@@ -63,6 +43,54 @@ struct CameraView: View {
                     
                     Spacer()
                     
+                    // 2画面比較
+                    HStack(spacing: 8) {
+                        // 左: 生カメラ映像
+                        VStack(spacing: 6) {
+                            Text("RAW")
+                                .font(.caption.bold())
+                                .foregroundColor(.yellow)
+                            
+                            if let frame = cameraService.currentFrame {
+                                Image(uiImage: frame)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .cornerRadius(12)
+                            }
+                        }
+                        
+                        // 右: 切り抜き済み
+                        VStack(spacing: 6) {
+                            Text("SEGMENTED")
+                                .font(.caption.bold())
+                                .foregroundColor(.green)
+                            
+                            if let masked = cameraService.previewWithMask {
+                                Image(uiImage: masked)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .cornerRadius(12)
+                                    .background(
+                                        // チェッカーボードで透過部分を可視化
+                                        CheckerboardBackground()
+                                            .cornerRadius(12)
+                                    )
+                            } else {
+                                ZStack {
+                                    Color.gray.opacity(0.2)
+                                        .cornerRadius(12)
+                                    Text("人物未検出")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    
+                    Spacer()
+                    
+                    // 人物検出ステータス
                     if cameraService.previewWithMask != nil {
                         Label("人物を検出中", systemImage: "person.fill.checkmark")
                             .font(.callout.bold())
@@ -72,6 +100,7 @@ struct CameraView: View {
                             .cornerRadius(8)
                     }
                     
+                    // シャッターボタン
                     Button {
                         capturePhoto()
                     } label: {
@@ -84,9 +113,17 @@ struct CameraView: View {
                                 .frame(width: 82, height: 82)
                         }
                     }
-                    .disabled(isCapturing || cameraService.currentFrame == nil)
-                    .opacity(isCapturing || cameraService.currentFrame == nil ? 0.5 : 1)
+                    .disabled(isCapturing)
+                    .opacity(isCapturing ? 0.5 : 1)
                     .padding(.bottom, 40)
+                }
+            } else {
+                // カメラ起動中
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text("カメラを起動中...")
+                        .foregroundColor(.gray)
                 }
             }
         }
@@ -108,6 +145,34 @@ struct CameraView: View {
                 onCapture()
             }
             isCapturing = false
+        }
+    }
+}
+
+// 透過部分を可視化するチェッカーボード
+struct CheckerboardBackground: View {
+    let size: CGFloat = 10
+    
+    var body: some View {
+        Canvas { context, canvasSize in
+            let rows = Int(canvasSize.height / size) + 1
+            let cols = Int(canvasSize.width / size) + 1
+            
+            for row in 0..<rows {
+                for col in 0..<cols {
+                    let isLight = (row + col) % 2 == 0
+                    let rect = CGRect(
+                        x: CGFloat(col) * size,
+                        y: CGFloat(row) * size,
+                        width: size,
+                        height: size
+                    )
+                    context.fill(
+                        Path(rect),
+                        with: .color(isLight ? Color.gray.opacity(0.3) : Color.gray.opacity(0.15))
+                    )
+                }
+            }
         }
     }
 }
